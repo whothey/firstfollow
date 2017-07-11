@@ -8,8 +8,8 @@ pub mod parser;
 
 use self::symbol::Symbol;
 
-pub type Rule = Vec<Symbol>;
-pub type State = String;
+pub type Rule      = Vec<Symbol>;
+pub type State     = String;
 pub type FirstSet  = HashSet<char>;
 pub type FirstMap  = HashMap<State, FirstSet>;
 pub type FollowSet = HashSet<char>;
@@ -112,25 +112,24 @@ impl Grammar {
 
                                 if set != old { first_updated = true }
                             },
-                            &Symbol::NonTerminal(ref name) => {
-                                if first.contains_key(name) {
-                                    // Current set
-                                    let     set    = first[key].clone();
-                                    // Associated State FirstSet
-                                    let mut target = first[name].clone();
+                            &Symbol::NonTerminal(ref name) if first.contains_key(name) => {
+                                // Current set
+                                let     set    = first[key].clone();
+                                // Associated State FirstSet
+                                let mut target = first[name].clone();
 
-                                    // Do not get Epsilon from target FirstSet
-                                    target.remove(&EPSILON_CHAR);
+                                // Do not get Epsilon from target FirstSet
+                                target.remove(&EPSILON_CHAR);
 
-                                    let union = set.union(&target)
-                                        .cloned()
-                                        .collect::<HashSet<_>>();
+                                let union = set.union(&target)
+                                    .cloned()
+                                    .collect::<HashSet<_>>();
 
-                                    first.insert(key.to_owned(), union);
+                                first.insert(key.to_owned(), union);
 
-                                    if set != first[key] { first_updated = true }
-                                }
-                            }
+                                if set != first[key] { first_updated = true }
+                            },
+                            _ => ()
                         }
                     }
                 }
