@@ -140,7 +140,113 @@ impl Grammar {
     }
 
     pub fn follow_set(&self) -> FollowMap {
-        unimplemented!()
+        let first_map = self.first_set();
+        let mut follow_map: FollowMap = HashMap::new();
+        let mut follow_changed = true;
+
+        {
+            follow_map.entry(self.initial.clone())
+                .or_insert(HashSet::new())
+                .insert('$');
+        }
+
+        // First Iteration: grab data using `first_map`
+        for (_, rules) in &self.map {
+            for rule in rules {
+                // Grab next terminal to Some(StateName)
+                let mut grab_to = None;
+
+                for symbol in rule {
+                    match symbol {
+                        &Symbol::NonTerminal(ref name) if grab_to.is_none() => {
+                            grab_to = Some(name.clone());
+                        },
+                        &Symbol::NonTerminal(ref name) if grab_to.is_some() => {
+                            let target = grab_to.take().unwrap();
+                            let union  = {
+                                let set = follow_map.entry(target.clone())
+                                    .or_insert(HashSet::new());
+
+                                let mut related = first_map[name].clone();
+                                related.remove(&EPSILON_CHAR);
+
+                                related.union(set).cloned().collect::<HashSet<_>>()
+                            };
+
+                            follow_map.insert(target.clone(), union);
+                            grab_to = Some(name.clone());
+                        },
+                        &Symbol::Terminal(ref s) if grab_to.is_some() => {
+                            let target  = grab_to.take().unwrap();
+                            let mut set = follow_map.entry(target)
+                                .or_insert(HashSet::new());
+
+                            set.insert(s.chars().nth(0).unwrap().clone());
+                        },
+                        _ => ()
+                    }
+                }
+            }
+        }
+
+        // Grab from Follow
+        while follow_changed {
+            follow_changed = false;
+
+            for (key, rules) in &self.map {
+                for rule in rules {
+                    // Grab next terminal to Some(StateName)
+                    let mut grab_to: Option<String> = None;
+
+                    for symbol in rule {
+                        if let &Symbol::NonTerminal(ref name) = symbol {
+                            if let Some(target) = grab_to.take() {
+                                let set = follow_map[&target].clone();
+
+                                let union  = {
+                                    let related = follow_map[name].clone();
+
+                                    related.union(&set).cloned().collect::<HashSet<_>>()
+                                };
+
+                                if union != set { follow_changed = true }
+                                follow_map.insert(target.clone(), union);
+                            }
+
+                            grab_to = Some(name.clone());
+
+                        }
+                    }
+                    // Mapping there situations:
+                    // A ::= aB => Follow(B) = Follow(B) + Follow(A)
+                    // and
+                    // B ::= aCD => and Epsilon in First(C), then:
+                    // Follow(C) = Follow(C) + Follow(B)
+                    // Parse in reverse order, mix the follows if upper conditions are fullfiled
+                    // and symbols are NonTerminals. Continue only if Epsilon IN First(last_read)
+                    for revs in rule.iter().rev() {
+                        if let &Symbol::NonTerminal(ref name) = revs {
+                            let set = follow_map[name].clone();
+
+                            let union = {
+                                let related = follow_map[key].clone();
+
+                                related.union(&set).cloned().collect::<HashSet<_>>()
+                            };
+
+                            if union != set { follow_changed = true }
+                            follow_map.insert(name.clone(), union);
+
+                            if ! first_map[name].contains(&EPSILON_CHAR) { break; }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        follow_map
     }
 }
 
