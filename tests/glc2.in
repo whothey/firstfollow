@@ -1,0 +1,4 @@
+<S> ::= <S>yx | <B>y | <C><A>w | <A><B>
+<A> ::= a<C><B> | <B>yb | b<C>
+<B> ::= c<A>d | <B>yd | a<B> | <>
+<C> ::= z<B>d | w<C>c | <A><B>y | <>

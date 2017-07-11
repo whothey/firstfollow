@@ -1,0 +1,9 @@
+[package]
+name = "firstfollow"
+version = "0.1.0"
+authors = ["Gabriel Henrique Rudey <ucraaa@gmail.com>"]
+
+[dependencies]
+log = "0.3"
+env_logger = "0.4"
+lazy_static = "0.2"
