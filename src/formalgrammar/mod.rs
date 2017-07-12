@@ -261,17 +261,17 @@ impl fmt::Display for Grammar {
         {
             write!(buf, "<{}> ::= ", self.initial).unwrap();
 
-            for rule in &self.map[&self.initial] {
+            for (i, rule) in self.map[&self.initial].iter().enumerate() {
+                if i > 0 { write!(buf, " | ").unwrap() }
+
                 for sym in rule {
                     write!(buf, "{}", sym).unwrap();
                 }
-
-                write!(buf, " | ").unwrap();
             }
 
             // Accept?
             if self.states[&self.initial] {
-                write!(buf, "<>\n").unwrap();
+                write!(buf, " | <>\n").unwrap();
             } else {
                 write!(buf, "\n").unwrap();
             }
@@ -282,17 +282,17 @@ impl fmt::Display for Grammar {
 
             write!(buf, "<{}> ::= ", s).unwrap();
 
-            for rule in &self.map[s] {
+            for (i, rule) in self.map[s].iter().enumerate() {
+                if i > 0 { write!(buf, " | ").unwrap() }
+
                 for sym in rule {
                     write!(buf, "{}", sym).unwrap();
                 }
-
-                write!(buf, " | ").unwrap();
             }
 
             // Accept?
             if self.states[s] {
-                write!(buf, " <>\n").unwrap();
+                write!(buf, " | <>\n").unwrap();
             } else {
                 write!(buf, "\n").unwrap();
             }

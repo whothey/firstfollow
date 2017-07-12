@@ -33,6 +33,7 @@ impl GrammarParser {
         }
     }
 
+    /// Parse a single line to grammar
     pub fn parse_line(&mut self, line: String) {
         for ch in line.chars() {
             match self.read_state {
@@ -142,10 +143,12 @@ impl GrammarParser {
         }
     }
 
+    /// Returns a reference to grammar
     pub fn get_grammar(&self) -> &Grammar {
         &self.grammar
     }
 
+    /// Consumes the parser and returns the grammar
     pub fn finish(self) -> Grammar {
         self.grammar
     }

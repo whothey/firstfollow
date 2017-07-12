@@ -25,7 +25,7 @@ fn main() {
 
         for l in reader.lines() {
             let line = l.unwrap();
-            debug!("{}", line);
+            debug!("Reading: {}", line);
 
             parser.parse_line(line);
         }
