@@ -214,13 +214,14 @@ impl Grammar {
                             }
 
                             grab_to = Some(name.clone());
-
+                        } else {
+                            grab_to.take();
                         }
                     }
                     // Mapping there situations:
                     // A ::= aB => Follow(B) = Follow(B) + Follow(A)
                     // and
-                    // B ::= aCD => and Epsilon in First(C), then:
+                    // B ::= aCD => and Epsilon in First(D), then:
                     // Follow(C) = Follow(C) + Follow(B)
                     // Parse in reverse order, mix the follows if upper conditions are fullfiled
                     // and symbols are NonTerminals. Continue only if Epsilon IN First(last_read)
